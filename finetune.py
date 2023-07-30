@@ -259,12 +259,13 @@ def train(
     )
     model.config.use_cache = False
 
-    old_state_dict = model.state_dict
-    model.state_dict = (
-        lambda self, *_, **__: get_peft_model_state_dict(
-            self, old_state_dict()
-        )
-    ).__get__(model, type(model))
+    # see https://github.com/tloen/alpaca-lora/pull/401/files
+    # old_state_dict = model.state_dict
+    # model.state_dict = (
+    #     lambda self, *_, **__: get_peft_model_state_dict(
+    #         self, old_state_dict()
+    #     )
+    # ).__get__(model, type(model))
 
     if torch.__version__ >= "2" and sys.platform != "win32":
         model = torch.compile(model)
