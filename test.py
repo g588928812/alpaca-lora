@@ -223,7 +223,7 @@ def train(
     # model/data params
     base_model: str ="yahma/llama-7b-hf",  # the only required argument
     data_path: str = None,
-    output_dir: str = "./test",
+    output_dir: str = "./test-4",
     # training hyperparams
     batch_size: int = 2,
     micro_batch_size: int = 1,
@@ -461,10 +461,17 @@ def train(
             return output
         def on_evaluate(self, args, state, control, **kwargs):
             for i in range(len(self.gen_dataset)):
-                prompt = self.gen_dataset[i]['instruction']
-                #print("prompt:",prompt)
+                # prompt = self.gen_dataset[i]['instruction']
+
+                prompt = prompter.generate_prompt(
+                    gen_dataset[i]["instruction"],
+                    gen_dataset[i]["input"]
+                )
+
+                print("Prompt:",prompt)
                 generated_text = self.generate_text(prompt)
-                print(f"\nSample {i+1}:\n Instruction: {prompt}\n Input: {self.gen_dataset[i]['input']}\n Output:{self.gen_dataset[i]['output']}\n\n Predict:\n {generated_text} \n=> The correct answer should follow the aplaca template.\n")
+                # print(f"\nSample {i+1}:\n Instruction: {prompt}\n Input: {self.gen_dataset[i]['input']}\n Output:{self.gen_dataset[i]['output']}\n\n Predict:\n {generated_text} \n=> The correct answer should follow the aplaca template.\n")
+                print(f"Predict:\n {generated_text}")
     
     # Callbacks
     gen_num_sample=3 #Randmly pick 3 instances from val_dataset
@@ -473,7 +480,7 @@ def train(
     generate_text_callback = GenerateTextCallback(model=model,tokenizer=tokenizer, device=device, gen_dataset=gen_dataset, max_length=cutoff_len)
     early_stopping_callback = EarlyStoppingCallback(
         early_stopping_patience=1,
-        early_stopping_threshold=0.5,
+        early_stopping_threshold=0.001,
     )
 
     trainer = transformers.Trainer(
@@ -510,12 +517,12 @@ def train(
       
     model.config.use_cache = False
     
-    old_state_dict = model.state_dict
-    model.state_dict = (
-        lambda self, *_, **__: get_peft_model_state_dict(
-            self, old_state_dict()
-        )
-    ).__get__(model, type(model))
+    # old_state_dict = model.state_dict
+    # model.state_dict = (
+    #     lambda self, *_, **__: get_peft_model_state_dict(
+    #         self, old_state_dict()
+    #     )
+    # ).__get__(model, type(model))
     
     if torch.__version__ >= "2" and sys.platform != "win32":
         model = torch.compile(model)
@@ -727,4 +734,4 @@ def run():
     train()
     main()
 if __name__ == "__main__":
-    fire.Fire(run)
+    fire.Fire(train)
