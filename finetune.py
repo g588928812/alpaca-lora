@@ -209,6 +209,9 @@ def train(
 
     model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
+    #!!!!
+    data["train"]=data["train"].shuffle().select(range(100))
+
     if val_set_size > 0:
         train_val = data["train"].train_test_split(
             test_size=val_set_size, shuffle=True, seed=42
@@ -239,7 +242,7 @@ def train(
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
             fp16=True,
-            logging_steps=10,
+            logging_steps=2,
             optim="adamw_torch",
             evaluation_strategy="steps" if val_set_size > 0 else "no",
             save_strategy="steps",
