@@ -1,0 +1,5 @@
+{
+    "description": "Simple Assistant Template.",
+    "prompt_input": "{input}\n",
+    "response_split": "### Assistant:"    
+}
